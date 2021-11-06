@@ -1,0 +1,15 @@
+.todo {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    font-size: 6vw;
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.1);
+}
