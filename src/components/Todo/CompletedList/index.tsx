@@ -24,7 +24,7 @@ const TodoList: FC<IProps> = ({
     }, [onActived, completedList]);
 
     return (
-        <div className="todo-list">
+        <div className="completed-list">
             <div className="todo-title">
                 <span>已完成</span>
                 <button className="clear-btn" onClick={onClear}>清空</button>

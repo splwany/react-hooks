@@ -1,7 +1,12 @@
-.todo-list {
-    width: 100%;
+.todo-list,
+.completed-list {
+    flex: 0 1 auto;
     overflow-x: hidden;
     overflow-y: auto;
+}
+
+.completed-list {
+    flex-grow: 1;
 }
 
 .todo-title {
