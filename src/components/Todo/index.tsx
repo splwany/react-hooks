@@ -16,27 +16,31 @@ type TodoListAction = {
 };
 
 const todoListReducer = (state: ITodoItem[], action: TodoListAction): ITodoItem[] => {
-    if (action.type === 'add') {
-        return [...state, action.val[0]];
-    }
-    if (action.type === 'change') {
-        const index = state.findIndex(item => item === action.val[0]);
-        const target = { ...state[index] };
-        target.completed = !target.completed;
-        return [...state.slice(0, index), target, ...state.slice(index + 1)];
-    }
-    if (action.type === 'delete') {
-        const indexs = [];
-        for (const itemToDel of action.val) {
-            const index = state.findIndex(item => item === itemToDel);
-            indexs.push(index);
-        }
-        const newState: ITodoItem[] = [];
-        for (let i = 0; i < state.length; i++) {
-            if (indexs.includes(i)) continue;
-            newState.push(state[i]);
-        }
-        return newState;
+    switch (action.type) {
+        case 'add':
+            return [...state, ...action.val];
+        case 'change':
+            const index = state.findIndex(item => item === action.val[0]);
+            const target = { ...state[index] };
+            target.completed = !target.completed;
+            return [...state.slice(0, index), target, ...state.slice(index + 1)];
+        case 'delete':
+            const indexs = [];
+            for (const itemToDel of action.val) {
+                const index = state.findIndex(item => item === itemToDel);
+                indexs.push(index);
+            }
+            const newState: ITodoItem[] = [];
+            for (let i = 0; i < state.length; i++) {
+                if (indexs.includes(i)) continue;
+                newState.push(state[i]);
+            }
+            return newState;
+        case 'clear':
+            if (state.length) return [];
+            break;
+        default:
+            break;
     }
     return state;
 };
@@ -53,6 +57,25 @@ const Todo: FC<IProps> = ({
     const [completedNum, setCompletedNum] = useState(0);
     const [isShowComp, setIsShowComp] = useState(false);
 
+    useEffect(() => {
+        const listener = (e: any) => {
+            localStorage.setItem('todoList', JSON.stringify(todoList));
+        };
+        window.addEventListener('beforeunload', listener);
+        return () => {
+            window.removeEventListener('beforeunload', listener);
+        };
+    }, [todoList]);
+
+    useEffect(() => {    
+        const savedListStr = localStorage.getItem('todoList');
+        let savedList: ITodoItem[] = [];
+        if (savedListStr) savedList = JSON.parse(savedListStr);
+        console.log(savedList);
+        todoListDispatch({ type: 'clear', val: [] });
+        if (savedList.length) todoListDispatch({ type: 'add', val: savedList });
+    }, []);
+    
     useEffect(() => {
         const acti = todoList.filter(item => !item.completed);
         setActivedList(acti);
