@@ -6,6 +6,7 @@ interface IProps {
     list: ITodoItem[];
     onChange: (element: ITodoItem) => void;
     title?: string;
+    emptyContent?: string;
     reverse?: boolean;
     onDelete?: (elementList: ITodoItem[]) => void;
 }
@@ -14,6 +15,7 @@ const TodoList: FC<IProps> = ({
     list,
     onChange,
     title,
+    emptyContent = '无',
     reverse,
     onDelete,
 }) => {
@@ -29,7 +31,9 @@ const TodoList: FC<IProps> = ({
         onChange(list[index]);
     }, [onChange, list]);
     
-    if (!list.length) return null;
+    const emptyElement = <div className="empty">{emptyContent}</div>;
+    
+    if (!list.length) return emptyElement;
     return (
         <div className="todo-list">
             {(Boolean(title) || onDelete) &&

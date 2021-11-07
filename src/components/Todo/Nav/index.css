@@ -7,6 +7,7 @@
     height: 4rem;
     background-color: rgb(5, 106, 119);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
 }
 
 .nav-title {
@@ -17,6 +18,7 @@
     font-weight: bold;
     user-select: none;
     transition: all 0.3s ease-in-out;
+    cursor: pointer;
 }
 
 .nav-input {
@@ -29,7 +31,7 @@
     padding: 0 1rem;
     outline: none;
     border-radius: 0.9rem;
-    transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out, opacity 0.3s ease;
 }
 
 .nav-input::placeholder {
@@ -43,6 +45,12 @@
     border-radius: 1.1rem;
     transform: scale(1.01);
     background-color: rgba(0, 0, 0, 0.4);
+}
+
+.nav-input.hide {
+    transition: all 0.5s ease-in-out;
+    transform: scale(0);
+    opacity: 0;
 }
 
 .nav-add-btn {
@@ -60,11 +68,17 @@
     border: unset;
     border-radius: 50%;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease-out;
 }
 
 .nav-add-btn:hover {
     background-color: white;
     mask-size: 80%;
     transform: rotate(180deg);
+}
+
+.nav-add-btn.hide {
+    transition: all 0.5s ease-out;
+    transform: rotate(180deg) scale(0);
+    opacity: 0.2;
 }
