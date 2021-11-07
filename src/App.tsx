@@ -5,7 +5,7 @@ import Todo from './components/Todo';
 const App: FC = (): ReactElement => {
   return (
     <div className="app">
-      <Todo />
+      <Todo emptyContent="什么都没有(●'◡'●)" />
     </div>
   );
 };

@@ -2,16 +2,13 @@ import { FC, ReactElement, useCallback, useEffect, useReducer, useState } from '
 import './index.css';
 import Nav from './Nav';
 import TodoList from './TodoList';
-import CompletedList from './CompletedList';
 import { ITodoItem } from './typings';
 
-
-const Empty: FC = (): ReactElement => {
-  return (
-    <div className="empty">什么都没有(●'◡'●)</div>
-  );
-};
-
+interface IProps {
+  activedTitle?: string;
+  completedTitle?: string;
+  emptyContent?: string;
+}
 
 type TodoListAction = {
   type: string
@@ -44,8 +41,11 @@ const todoListReducer = (state: ITodoItem[], action: TodoListAction): ITodoItem[
   return state;
 };
 
-
-const Todo: FC = (): ReactElement => {
+const Todo: FC<IProps> = ({
+  activedTitle = '代办',
+  completedTitle = '已完成',
+  emptyContent = '无'
+}): ReactElement => {
 
   const [todoList, todoListDispatch] = useReducer(todoListReducer, []);
   const [activedList, setActivedList] = useState<ITodoItem[]>([]);
@@ -77,15 +77,16 @@ const Todo: FC = (): ReactElement => {
     todoListDispatch({type: 'delete', val: elementList});
   }, []);
 
+  const emptyElement = <div className="empty">{emptyContent}</div>;
+
   return (
     <div className="todo">
       <Nav onAdd={onAdd} />
-      {(!activedList.length && !completedList.length) ? <Empty /> : ''}
-      {activedList.length ? <TodoList activedList={activedList as ITodoItem[]} reverse onCompleted={onCompletedChange} /> : ''}
-      {completedList.length ? <CompletedList completedList={completedList as ITodoItem[]} onActived={onCompletedChange} onDelete={onDelete} /> : ''}
+      {!activedList.length && !completedList.length && emptyElement}
+      <TodoList title={activedTitle} list={activedList} reverse onChange={onCompletedChange} />
+      <TodoList title={completedTitle} list={completedList} onChange={onCompletedChange} onDelete={onDelete} />
     </div>
   );
 };
-
 
 export default Todo;
