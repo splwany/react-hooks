@@ -58,13 +58,7 @@ const Todo: FC<IProps> = ({
     const [isShowComp, setIsShowComp] = useState(false);
 
     useEffect(() => {
-        const listener = (e: any) => {
-            localStorage.setItem('todoList', JSON.stringify(todoList));
-        };
-        window.addEventListener('beforeunload', listener);
-        return () => {
-            window.removeEventListener('beforeunload', listener);
-        };
+        localStorage.setItem('todoList', JSON.stringify(todoList));
     }, [todoList]);
 
     useEffect(() => {    
