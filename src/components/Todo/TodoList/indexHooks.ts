@@ -22,7 +22,7 @@ function useTodoListInit(
         onChange(sortedList[index]);
     }, [onChange, sortedList]);
 
-    return { isEmpty: list.length === 0, showHeader: Boolean(title) || onDelete, sortedList, onClear, onClick };
+    return { isEmpty: sortedList.length === 0, showHeader: Boolean(title) || onDelete, sortedList, onClear, onClick };
 }
 
 export {
