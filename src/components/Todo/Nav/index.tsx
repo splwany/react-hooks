@@ -1,58 +1,45 @@
-import { FC, ReactElement, useCallback, useRef, useState } from 'react';
-import { ITodoItem } from '../typings';
+import { FC, ReactElement } from 'react';
+import { TodoItemType } from '../indexTypes';
+import { useInputElementInit } from './indexHooks';
 import './index.css';
 
-
-interface IProps {
+interface INavProps {
+    title: string;
+    hideInput?: boolean;
     onTitleClick: () => void;
-    onAdd: (todoItem: ITodoItem) => void;
+    onAdd: (todoItem: TodoItemType) => void;
 }
 
+interface IInputProps {
+    onAdd: INavProps['onAdd'];
+    isHide?: boolean;
+}
 
-const Nav: FC<IProps> = ({
+const Nav: FC<INavProps> = ({
+    title,
+    hideInput = false,
     onTitleClick,
     onAdd
+}): ReactElement => (
+    <div className="nav">
+        <span className="nav-title" onClick={() => onTitleClick()}>{title}</span>
+        <Input isHide={hideInput} onAdd={onAdd} />
+    </div>
+);
+
+const Input: FC<IInputProps> = ({
+    onAdd,
+    isHide = true
 }): ReactElement => {
 
-    const navTitles = ['Todo List', 'Done List'];
-    const [navTitleIndex, setNavTitleIndex] = useState(0);
-    const inputRef = useRef<HTMLInputElement>(null);
-
-    const onTitleClicked = useCallback(() => {
-        setNavTitleIndex(preState => (preState + 1) % 2);
-        onTitleClick();
-    }, [onTitleClick]);
-
-    const onAddBtnClicked = useCallback(() => {
-        const val: string = inputRef.current!.value.trim();
-        if (val.length) {
-            const todoItem: ITodoItem = {
-                key: Date.now(),
-                content: val,
-                completed: false
-            };
-            onAdd(todoItem);
-            inputRef.current!.value = '';
-        }
-    }, [onAdd]);
-
-    const onKeyDown = useCallback(e => {
-        if (e.keyCode === 13) {
-            onAddBtnClicked();
-        }
-    }, [onAddBtnClicked]);
-
-    const hideInput = navTitleIndex > 0;
-    const inputElement = <>
-        <input className={`nav-input${hideInput ? ' hide' : ''}`} type="text" placeholder="请输入内容..." ref={inputRef} onKeyDown={onKeyDown} />
-        <button className={`nav-add-btn${hideInput ? ' hide' : ''}`} onClick={onAddBtnClicked}></button>
-    </>;
+    // initialize inputElement
+    const [inputRef, onKeyDown, onAddBtnClicked] = useInputElementInit(onAdd);
 
     return (
-        <div className="nav">
-            <span className="nav-title" onClick={onTitleClicked}>{navTitles[navTitleIndex]}</span>
-            {inputElement}
-        </div>
+        <>
+            <input className={`nav-input${ isHide ? ' hide' : '' }`} type="text" placeholder="请输入内容..." ref={inputRef} onKeyDown={onKeyDown} />
+            <button className={`nav-add-btn${ isHide ? ' hide' : '' }`} onClick={onAddBtnClicked}></button>
+        </>
     );
 };
 

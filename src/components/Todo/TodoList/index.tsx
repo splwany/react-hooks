@@ -1,51 +1,45 @@
-import {FC, useCallback} from 'react';
-import { ITodoItem } from '../typings';
+import { FC } from 'react';
+import { TodoItemType } from '../indexTypes';
+import { useTodoListInit } from './indexHooks';
 import './index.css';
 
 interface IProps {
-    list: ITodoItem[];
-    onChange: (element: ITodoItem) => void;
+    list: TodoItemType[];
+    onChange: (element: TodoItemType) => void;
     title?: string;
     emptyContent?: string;
     reverse?: boolean;
-    onDelete?: (elementList: ITodoItem[]) => void;
+    deleteButtonText?: string;
+    onDelete?: (elementList: TodoItemType[]) => void;
 }
 
 const TodoList: FC<IProps> = ({
-    list,
-    onChange,
     title,
+    list,
     emptyContent = '无',
     reverse,
-    onDelete,
+    deleteButtonText = '清空',
+    onChange,
+    onDelete
 }) => {
 
-    if (reverse) list = list.slice().reverse();
+    const { isEmpty, showHeader, sortedList, onClear, onClick } = useTodoListInit(title, list, reverse, onChange, onDelete);
 
-    const onClear = useCallback(() => {
-        onDelete!(list);
-    }, [onDelete, list]);
-    
-    const onClick = useCallback(event => {
-        const index: number = Number(event.currentTarget.dataset.index);
-        onChange(list[index]);
-    }, [onChange, list]);
-    
     const emptyElement = <div className="empty">{emptyContent}</div>;
-    
-    if (!list.length) return emptyElement;
+
+    if (isEmpty) return emptyElement;
     return (
-        <div className="todo-list">
-            {(Boolean(title) || onDelete) &&
+        <div className="todo-list" onClick={onClick}>
+            {showHeader &&
                 <div className="todo-title">
                     <span>{title || '未命名标题'}</span>
-                    {onDelete && <button className="clear-btn" onClick={onClear}>清空</button>}
+                    {onDelete && <button className="clear-btn" onClick={onClear}>{deleteButtonText}</button>}
                 </div>
             }
-            {list.map((item, i) => (
-                <li className="todo-item" key={item.key} data-index={i} onClick={onClick}>
+            {sortedList.map((item, i) => (
+                <li className="todo-item" key={item.key} data-index={i}>
                     <input type="checkbox" defaultChecked={item.completed} />
-                    <span className={`todo-item-text${item.completed ? ' completed' : ''}`}>{item.content}</span>
+                    <span className={`todo-item-text${ item.completed ? ' completed' : '' }`}>{item.content}</span>
                 </li>
             ))}
         </div>
