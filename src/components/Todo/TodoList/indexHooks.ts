@@ -17,8 +17,7 @@ function useTodoListInit(
     }, [onDelete, sortedList]);
 
     const onClick = useCallback(event => {
-        const { index } = event.target.dataset;
-        if (typeof index === 'undefined') return;
+        const index: number = Number(event.currentTarget.dataset.index);
         onChange(sortedList[index]);
     }, [onChange, sortedList]);
 

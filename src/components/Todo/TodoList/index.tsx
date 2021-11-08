@@ -29,7 +29,7 @@ const TodoList: FC<IProps> = ({
 
     if (isEmpty) return emptyElement;
     return (
-        <div className="todo-list" onClick={onClick}>
+        <div className="todo-list">
             {showHeader &&
                 <div className="todo-title">
                     <span>{title || '未命名标题'}</span>
@@ -37,7 +37,7 @@ const TodoList: FC<IProps> = ({
                 </div>
             }
             {sortedList.map((item, i) => (
-                <li className="todo-item" key={item.key} data-index={i}>
+                <li className="todo-item" key={item.key} data-index={i} onClick={onClick}>
                     <input type="checkbox" defaultChecked={item.completed} />
                     <span className={`todo-item-text${ item.completed ? ' completed' : '' }`}>{item.content}</span>
                 </li>
