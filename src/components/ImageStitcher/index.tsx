@@ -98,7 +98,7 @@ const ImageStitcher: FC = (): ReactElement => {
 
     return (
         <div className="image-stitcher">
-            <input ref={inputRef} type="file" multiple onChange={selectImage} />
+            <input ref={inputRef} type="file" accept="image/*" multiple onChange={selectImage} />
             <div className="button-group">
                 <button className="select-file-btn" onClick={() => inputRef.current?.click()}>选择图片</button>
                 {imgDataUrlList.length > 0 && (
