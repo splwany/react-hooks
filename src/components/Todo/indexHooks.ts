@@ -1,16 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useReducer, useState } from "react";
+import { useLocalStorage } from "../../hooks/common";
 import { TodoItemType, TodoListAction, TodoListModeType } from "./indexTypes";
-
-
-function useLocalStorage<T>(key: string, defaultValue: T): T {
-    const value = useMemo(() => {
-        const value = localStorage.getItem(key);
-        if (value === null) return null;
-        return JSON.parse(value);
-    }, [key]);
-    if (value === null) return defaultValue;
-    return value;
-}
 
 
 function useTodoListState(initialTodoList: TodoItemType[]): [TodoItemType[][], React.Dispatch<TodoListAction>] {
@@ -18,7 +8,7 @@ function useTodoListState(initialTodoList: TodoItemType[]): [TodoItemType[][], R
     const [todoList, todoListDispatch] = useReducer(todoListReducer, initialTodoList);
 
     // activatedList, computed from todoList
-    const activatedList = useMemo(() => todoList.filter(item => !item.completed), [todoList]);
+    const activatedList = todoList.filter(item => !item.completed);
 
     // when todoList updated, save it to localStorage
     // and update completedNum
@@ -28,7 +18,7 @@ function useTodoListState(initialTodoList: TodoItemType[]): [TodoItemType[][], R
     }, [todoList, activatedList]);
 
     // completedList
-    const completedListInit = useMemo(() => initialTodoList.filter(item => item.completed), [initialTodoList]);
+    const completedListInit = initialTodoList.filter(item => item.completed);
     const [completedList, setCompletedList] = useState<TodoItemType[]>(completedListInit);
     const [completedNum, setCompletedNum] = useState(completedList.length);
     useEffect(() => {
@@ -114,13 +104,9 @@ function useTodoListChooserInit(listModes: TodoListModeType[], todoListDispatch:
         return [titles, emptyContents, reverses, canClears, deleteButtonTexts];
     }, [listModes]);
 
-    const onChange = useCallback((element: TodoItemType) => {
-        todoListDispatch({ type: 'change', val: [element] });
-    }, [todoListDispatch]);
+    const onChange = (element: TodoItemType) => todoListDispatch({ type: 'change', val: [element] });
 
-    const onDelete = useCallback((elementList: TodoItemType[]) => {
-        todoListDispatch({ type: 'delete', val: elementList });
-    }, [todoListDispatch]);
+    const onDelete = (elementList: TodoItemType[]) => todoListDispatch({ type: 'delete', val: elementList });
 
     return { titles, emptyContents, reverses, canClears, deleteButtonTexts, onChange, onDelete };
 }

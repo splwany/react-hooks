@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { TodoItemType } from "../indexTypes";
 
 function useTodoListInit(
@@ -12,14 +11,12 @@ function useTodoListInit(
     let sortedList = list;
     if (reverse) sortedList = list.slice().reverse();
 
-    const onClear = useCallback(() => {
-        onDelete!(sortedList);
-    }, [onDelete, sortedList]);
+    const onClear = () => onDelete!(sortedList);
 
-    const onClick = useCallback(event => {
+    const onClick = (event: any) => {
         const index: number = Number(event.currentTarget.dataset.index);
         onChange(sortedList[index]);
-    }, [onChange, sortedList]);
+    }
 
     return { isEmpty: sortedList.length === 0, showHeader: Boolean(title) || onDelete, sortedList, onClear, onClick };
 }
