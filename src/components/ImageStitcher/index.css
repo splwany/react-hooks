@@ -24,7 +24,8 @@ input[type=file] {
 
 .select-file-btn,
 .reset-btn,
-.stitch-btn {
+.stitch-btn,
+.save-btn {
     border: none;
     margin: 1rem;
     border-radius: 1.5rem;

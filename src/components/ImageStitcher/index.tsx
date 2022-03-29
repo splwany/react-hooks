@@ -1,4 +1,5 @@
 import { FC, ReactElement, useEffect, useRef, useState } from 'react';
+import { getDate, throttle } from '../../utils/common';
 import './index.css';
 
 function getImageDataUrl(blob: Blob) {
@@ -13,46 +14,69 @@ function getImageDataUrl(blob: Blob) {
     });
 }
 
-function getImageDatas(imgDataUrlList: string[]) {
+function getImageElements(imgDataUrlList: string[]) {
     const promiseList = imgDataUrlList.map(imgDataUrl => {
-        return new Promise<ImageData>((resolve, reject) => {
+        return new Promise<HTMLImageElement>((resolve, reject) => {
             const img = new Image();
             img.src = imgDataUrl;
             img.onload = () => {
-                const canvas = document.createElement('canvas');
-                canvas.setAttribute('width', img.width.toString());
-                canvas.setAttribute('height', img.height.toString());
-                const ctx = canvas.getContext('2d');
-                ctx?.drawImage(img, 0, 0);
-                const imgData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-                if (imgData) resolve(imgData);
-                else reject('图片读取失败');
+                resolve(img);
             };
         });
     });
     return Promise.all(promiseList);
 }
 
-function cropImageData(imgData: ImageData, top: number, bottom: number) {
-    const { data, width, height } = imgData;
-    const start = 4 * width * Math.floor(height * top);
-    const end = 4 * width * Math.floor(height * (1 - bottom));
-    const cropData = data.subarray(start, end);
-    return new ImageData(cropData, width);
+function imgElement2ImageData(imgElement: HTMLImageElement, width: number, height: number) {
+    let {width: w, height: h} = imgElement;
+    const ratioW = width / w;
+    const ratioH = height / h;
+    const canvas = document.createElement('canvas');
+    canvas.setAttribute('width', width.toString());
+    canvas.setAttribute('height', height.toString());
+    const ctx = canvas.getContext('2d');
+    ctx?.scale(ratioW, ratioH);
+    ctx?.drawImage(imgElement, 0, 0);
+    return ctx?.getImageData(0, 0, canvas.width, canvas.height)!;
 }
 
-function concatImgDatas(imgDataList: ImageData[]) {
-    if (imgDataList.length === 0) return '';
-    const width = imgDataList[0].width.toString();
-    const heightList = [0, ...imgDataList.map(imgData => imgData.height)];
-    const height = heightList.reduce((sum, cur) => sum + cur).toString();
+function cropImageData(imageData: ImageData, top: number, bottom: number) {
+    const { data, width, height } = imageData;
+    const start = 4 * width * Math.floor(height * top);
+    const end = 4 * width * Math.floor(height * (1 - bottom));
+    return new ImageData(data.subarray(start, end), width);
+}
+
+function cropAndConcatImgDatas(imgElementList: HTMLImageElement[], cropRangeList: [number, number][], maxWidth: number = 1080) {
+    if (imgElementList.length === 0) return '';
+
+    const width = maxWidth;
+    const heightList = [];
+    let height = 0;
+    const imgDataList: ImageData[] = [];
+    for (let i = 0; i < imgElementList.length; ++i) {
+        let {width: w, height: h} = imgElementList[i];
+        const ratio = width / w;
+        h *= ratio;
+
+        const imgData = imgElement2ImageData(imgElementList[i], width, h);
+        const cropedImgData = cropImageData(imgData, ...cropRangeList[i]);
+
+        height += cropedImgData.height;
+        imgDataList.push(cropedImgData);
+        heightList.push(cropedImgData.height);
+    }
+
     const canvas = document.createElement('canvas');
-    canvas.setAttribute('width', width);
-    canvas.setAttribute('height', height);
+    canvas.setAttribute('width', width.toString());
+    canvas.setAttribute('height', height.toString());
     const ctx = canvas.getContext('2d');
-    imgDataList.forEach((imgData, i) => {
-        ctx?.putImageData(imgData, 0, heightList[i]);
-    });
+    let lastY = 0;
+    for(let i = 0; i < imgDataList.length; ++i) {
+        ctx?.putImageData(imgDataList[i], 0, lastY);
+        lastY += heightList[i];
+    }
+
     return canvas.toDataURL();
 }
 
@@ -69,9 +93,8 @@ const ImageStitcher: FC = (): ReactElement => {
         const list: string[] = [];
         for (let i = 0; i < fileList.length; ++i) {
             const file = fileList[i];
-            await getImageDataUrl(file).then((blobUrl: string) => {
-                list.push(blobUrl);
-            }, err => console.log(err));
+            const blobUrl = await getImageDataUrl(file);
+            list.push(blobUrl);
         }
         setResultURL('');
         setImgDataUrlList(list);
@@ -79,13 +102,18 @@ const ImageStitcher: FC = (): ReactElement => {
     };
 
     const stitchImages = async () => {
-        const imgDataList: ImageData[] = await getImageDatas(imgDataUrlList);
-
-        const cropedImgDataList = imgDataList.map((imgData, i) => cropImageData(imgData, ...cropRangeList[i]));
-        const stitchedImgDataUrl = concatImgDatas(cropedImgDataList);
-        
+        const imgElementList: HTMLImageElement[] = await getImageElements(imgDataUrlList);
+        const stitchedImgDataUrl = cropAndConcatImgDatas(imgElementList, cropRangeList, 1080);
         setResultURL(stitchedImgDataUrl);
     };
+
+    const saveImage = async () => {
+        const a = document.createElement('a');
+        const event = new MouseEvent('click');
+        a.download = `长图_${getDate()}`;
+        a.href = resultURL;
+        a.dispatchEvent(event);
+    }
 
     const onSelectorChange = (index: number, top: number, bottom: number) => {
         cropRangeList[index] = [top, bottom];
@@ -105,6 +133,7 @@ const ImageStitcher: FC = (): ReactElement => {
                     <div className="stitch-btn-group">
                         <button className="reset-btn" onClick={onReset}>重置</button>
                         <button className="stitch-btn" onClick={stitchImages}>拼接</button>
+                        <button className="save-btn" onClick={saveImage}>保存</button>
                     </div>
                 )}
             </div>
@@ -127,17 +156,6 @@ interface IAreaSelectorProps {
     onChange: (top: number, bottom: number) => void;
 }
 
-const throttle = (fn: CallableFunction) => {
-    let lock = false;
-    const unLock = () => lock = false;
-    return (...args: any[]) => {
-        if (lock) return;
-        lock = true;
-        fn(...args);
-        requestAnimationFrame(unLock);
-    };
-};
-
 const AreaSelector: FC<IAreaSelectorProps> = ({
     src,
     onChange
@@ -156,19 +174,20 @@ const AreaSelector: FC<IAreaSelectorProps> = ({
     const areaRef = useRef<HTMLDivElement>(null);
     const height = areaRef.current?.clientHeight;
 
-    const onTopBarMouseDown = (e: any) => {
+    const onTopBarStart = (e: any) => {
         setTopTouched(true);
-        setTopStartY(e.pageY);
+        setTopStartY(e.type === 'mousedown' ? e.pageY : e.targetTouches[0].pageY);
     };
 
-    const onBottomBarMouseDown = (e: any) => {
+    const onBottomBarStart = (e: any) => {
         setBottomTouched(true);
-        setBottomStartY(e.pageY);
+        setBottomStartY(e.type === 'mousedown' ? e.pageY : e.targetTouches[0].pageY);
     };
 
-    const onMouseMove = throttle((e: any) => {
+    const onMove = throttle((e: any) => {
+        const pageY = e.type === 'mousemove' ? e.pageY : e.targetTouches[0].pageY;
         if (topTouched) {
-            const distance = e.pageY - topStartY;
+            const distance = pageY - topStartY;
             let newTop = topStartOffset + distance;
             if (newTop < 0) newTop = 0;
             else if (newTop > height! - bottomStartOffset) newTop = height! - bottomStartOffset;
@@ -182,7 +201,7 @@ const AreaSelector: FC<IAreaSelectorProps> = ({
                 rgba(0,0,0,0) ${bottomPercent*100}%,
                 rgba(0,0,0,0.7) ${bottomPercent*100}%)`;
         } else if (bottomTouched) {
-            const distance = bottomStartY - e.pageY;
+            const distance = bottomStartY - pageY;
             let newBottom = bottomStartOffset + distance;
             if (newBottom < 0) newBottom = 0;
             else if (newBottom > height! - topStartOffset) newBottom = height! - topStartOffset;
@@ -214,17 +233,19 @@ const AreaSelector: FC<IAreaSelectorProps> = ({
         };
         const body = document.querySelector('body');
         body!.addEventListener('mouseup', mouseUpListener);
+        body!.addEventListener('touchend', mouseUpListener);
         return () => {
             body!.removeEventListener('mouseup', mouseUpListener);
+            body!.removeEventListener('touchend', mouseUpListener);
         };
     }, [height, onChange, topTouched, bottomTouched]);
 
     return (
-        <div className="area-selector" onMouseMove={onMouseMove}>
+        <div className="area-selector" onMouseMove={onMove} onTouchMove={onMove}>
             <img className="source-image" src={src} alt="图片" />
             <div className="area-box" ref={areaRef}>
-                <div className="bar top-bar" ref={topRef} onMouseDown={onTopBarMouseDown}></div>
-                <div className="bar bottom-bar" ref={bottomRef} onMouseDown={onBottomBarMouseDown}></div>
+                <div className="bar top-bar" ref={topRef} onMouseDown={onTopBarStart} onTouchStart={onTopBarStart}></div>
+                <div className="bar bottom-bar" ref={bottomRef} onMouseDown={onBottomBarStart} onTouchStart={onBottomBarStart}></div>
             </div>
         </div>
     );
