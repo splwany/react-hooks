@@ -2,14 +2,15 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     height: 100vh;
 }
 
 .button-group {
     display: flex;
-    width: 100%;
     align-items: center;
     justify-content: space-between;
+    margin: 1rem;
 }
 
 input[type=file] {
@@ -24,34 +25,51 @@ input[type=file] {
     justify-content: space-between;
 }
 
-.select-file-btn,
+.clear-btn,
 .reset-btn,
 .stitch-btn,
 .save-btn {
     flex: 0 0 auto;
     border: none;
     padding: 0;
-    margin-right: 1rem;
+    margin: 0 0.5rem;
     border-radius: 1.5rem;
     background-color: rgb(39, 110, 112);
     color: white;
     font-size: 1rem;
-    width: 4rem;
+    width: 5rem;
     height: 3rem;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
-.select-file-btn {
-    width: 6rem;
-    margin: 1rem;
-}
-
-.select-file-btn:hover,
+.clear-btn:hover,
 .reset-btn:hover,
 .stitch-btn:hover,
 .save-btn:hover {
     background-color: rgb(30, 87, 88);
+}
+
+.select-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+    height: 20rem;
+    font-size: 1.3rem;
+    border-radius: 1rem;
+    border: 0.2rem dashed rgba(0, 0, 0, 0.3);
+    user-select: none;
+}
+
+.select-file-btn {
+    border: none;
+    color: rgb(37, 103, 104);
+    font-size: inherit;
+    font-weight: bold;
+    text-decoration: underline;
+    background-color: transparent;
+    cursor: pointer;
 }
 
 .image-list,
@@ -76,7 +94,7 @@ input[type=file] {
 
 .add-img-btn {
     position: absolute;
-    right: 1rem;
+    right: 0.7rem;
     bottom: -1.25rem;
     border: unset;
     width: 2.5rem;
@@ -150,18 +168,20 @@ input[type=file] {
     display: flex;
     flex-direction: column;
     width: 2.5rem;
+    height: 8rem;
     align-items: center;
-    margin: 1rem;
+    justify-content: space-between;
+    margin: 0.7rem;
 }
 
 .order-btn {
+    flex: 0 0 auto;
     width: 100%;
     height: 2.5rem;
     background-color: transparent;
     /* mask-position: center; */
     /* mask-size: 100%; */
     /* mask-repeat: no-repeat; */
-    margin-bottom: 1rem;
     background-size: contain;
     border: unset;
     border-radius: 50%;

@@ -88,18 +88,27 @@ const ImageStitcher: FC = (): ReactElement => {
     const resultImageRef = useRef<HTMLImageElement>(null);
     const [resultURL, setResultURL] = useState<string>('');
 
-    const selectImage = async (e: any) => {
+    const selectImages = async (e: any) => {
         const fileList = e.target.files;
+        const imageUrlList = await getImageUrls(fileList);
+        setImageDatas(imageUrlList);
+    };
+
+    const getImageUrls = async (fileList: Blob[]) => {
         const list: string[] = [];
         for (let i = 0; i < fileList.length; ++i) {
             const file = fileList[i];
             const blobUrl = await getImageDataUrl(file);
             list.push(blobUrl);
         }
+        return list;
+    }
+
+    const setImageDatas = (imageUrlList: string[]) => {
         setResultURL('');
-        setImgDataUrlList(list);
-        setCropRangeList(new Array(list.length).fill([0, 0]));
-    };
+        setImgDataUrlList(imageUrlList);
+        setCropRangeList(new Array(imageUrlList.length).fill([0, 0]));
+    }
 
     const stitchImages = async () => {
         const imgElementList: HTMLImageElement[] = await getImageElements(imgDataUrlList);
@@ -141,40 +150,58 @@ const ImageStitcher: FC = (): ReactElement => {
         inputElem.setAttribute('multiple', 'true');
         inputElem.addEventListener('change', async (e: any) => {
             const fileList = e.target.files;
-            const list: string[] = [];
-            for (let i = 0; i < fileList.length; ++i) {
-                const file = fileList[i];
-                const blobUrl = await getImageDataUrl(file);
-                list.push(blobUrl);
-            }
-            imgDataUrlList.splice(index + 1, 0, ...list);
+            const imageUrlList = await getImageUrls(fileList);
+            imgDataUrlList.splice(index + 1, 0, ...imageUrlList);
             setImgDataUrlList([...imgDataUrlList]);
-            cropRangeList.splice(index + 1, 0, [0, 0]);
+            cropRangeList.splice(index + 1, 0, ...new Array(imageUrlList.length).fill([0, 0]));
             setCropRangeList([...cropRangeList]);
         });
         inputElem.click();
     }
 
+    const onClear = () => {
+        setImgDataUrlList([]);
+        onReset();
+    };
+
     const onReset = () => {
         setResultURL('');
+        setCropRangeList(new Array(imgDataUrlList.length).fill([0, 0]));
+    };
+
+    const onDragOver = (e: any) => {
+        e.preventDefault();
+    };
+
+    const onDrop = async (e: any) => {
+        e.preventDefault();
+        const fileList = e.dataTransfer.files;
+        const imageUrlList = await getImageUrls(fileList);
+        setImageDatas(imageUrlList);
     };
 
     return (
         <div className="image-stitcher">
-            <input ref={inputRef} type="file" accept="image/*" multiple onChange={selectImage} />
+            <input ref={inputRef} type="file" accept="image/*" multiple onChange={selectImages} />
             <div className="button-group">
-                <button className="select-file-btn" onClick={() => inputRef.current?.click()}>选择图片</button>
                 {imgDataUrlList.length > 0 && (
                     <div className="stitch-btn-group">
-                        <button className="reset-btn" onClick={onReset}>重置</button>
-                        <button className="stitch-btn" onClick={stitchImages}>拼接</button>
+                        <button className="clear-btn" onClick={onClear}>清空</button>
+                        {resultURL !== '' && <button className="reset-btn" onClick={onReset}>重置</button>}
+                        {resultURL === '' && <button className="stitch-btn" onClick={stitchImages}>拼接</button>}
                         {resultURL !== '' && (
                             <button className="save-btn" onClick={saveImage}>保存</button>
                         )}
                     </div>
                 )}
             </div>
-            {resultURL === '' && (
+            {imgDataUrlList.length === 0 && (
+                <div className="select-box" onDragOver={onDragOver} onDrop={onDrop}>
+                    <span>拖拽图片到此处，或</span>
+                    <button className="select-file-btn" onClick={() => inputRef.current?.click()}>点击选择</button>
+                </div>
+            )}
+            {imgDataUrlList.length > 0 && resultURL === '' && (
                 <div className="image-list" ref={imageListRef}>
                     {imgDataUrlList.map((item, i) => (
                         <div className="selector-item" key={`selector-item-${i}`}>
