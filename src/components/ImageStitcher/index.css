@@ -139,24 +139,23 @@ input[type=file] {
 .order-btn {
     width: 100%;
     height: 2.5rem;
-    background-color: rgba(51, 51, 51, 0.8);
-    mask-position: center;
-    mask-size: 100%;
-    mask-repeat: no-repeat;
+    background-color: transparent;
+    /* mask-position: center; */
+    /* mask-size: 100%; */
+    /* mask-repeat: no-repeat; */
+    background-size: contain;
     border: unset;
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.2s ease-out;
 }
 
-.order-btn:hover {
-    background-color: rgba(51, 51, 51, 0.5)
-}
-
 .up-btn {
-    mask-image: url(/src/static/icons/up.svg);
+    /* mask-image: url(/src/static/icons/up.svg); */
+    background-image: url(/src/static/icons/up.svg);
 }
 
 .down-btn {
-    mask-image: url(/src/static/icons/down.svg);
+    /* mask-image: url(/src/static/icons/down.svg); */
+    background-image: url(/src/static/icons/down.svg);
 }
