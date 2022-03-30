@@ -19,28 +19,37 @@ input[type=file] {
 }
 
 .stitch-btn-group {
-    
+    flex: 0 1 auto;
+    display: flex;
+    justify-content: space-around;
 }
 
 .select-file-btn,
 .reset-btn,
 .stitch-btn,
 .save-btn {
+    flex: 0 0 auto;
     border: none;
     margin: 1rem;
+    padding: 0;
     border-radius: 1.5rem;
     background-color: rgb(39, 110, 112);
     color: white;
     font-size: 1rem;
-    width: 7rem;
+    width: 4rem;
     height: 3rem;
     cursor: pointer;
     transition: all 0.3s ease;
 }
 
+.select-file-btn {
+    width: 6rem;
+}
+
 .select-file-btn:hover,
 .reset-btn:hover,
-.stitch-btn:hover {
+.stitch-btn:hover,
+.save-btn:hover {
     background-color: rgb(30, 87, 88);
 }
 
@@ -63,6 +72,7 @@ input[type=file] {
     position: relative;
     width: 30rem;
     user-select: none;
+    touch-action: none;
 }
 
 @media only screen and (max-width: 500px) {

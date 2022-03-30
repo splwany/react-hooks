@@ -133,7 +133,9 @@ const ImageStitcher: FC = (): ReactElement => {
                     <div className="stitch-btn-group">
                         <button className="reset-btn" onClick={onReset}>重置</button>
                         <button className="stitch-btn" onClick={stitchImages}>拼接</button>
-                        <button className="save-btn" onClick={saveImage}>保存</button>
+                        {resultURL !== '' && (
+                            <button className="save-btn" onClick={saveImage}>保存</button>
+                        )}
                     </div>
                 )}
             </div>

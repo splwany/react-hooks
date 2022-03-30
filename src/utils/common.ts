@@ -14,5 +14,5 @@ export const getDate = () => {
     const year = d.getFullYear().toString();
     const month = (d.getMonth() + 101).toString().substring(1);
     const date = (d.getDate() + 100).toString().substring(1);
-    return `${year}${month}${date}`;
+    return `${year}-${month}-${date}`;
 }
