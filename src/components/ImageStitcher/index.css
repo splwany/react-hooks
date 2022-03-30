@@ -21,7 +21,7 @@ input[type=file] {
 .stitch-btn-group {
     flex: 0 1 auto;
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
 }
 
 .select-file-btn,
@@ -30,8 +30,8 @@ input[type=file] {
 .save-btn {
     flex: 0 0 auto;
     border: none;
-    margin: 1rem;
     padding: 0;
+    margin-right: 1rem;
     border-radius: 1.5rem;
     background-color: rgb(39, 110, 112);
     color: white;
@@ -44,6 +44,7 @@ input[type=file] {
 
 .select-file-btn {
     width: 6rem;
+    margin: 1rem;
 }
 
 .select-file-btn:hover,
