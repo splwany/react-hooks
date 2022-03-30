@@ -120,6 +120,13 @@ const ImageStitcher: FC = (): ReactElement => {
         setCropRangeList([...cropRangeList]);
     };
 
+    const onOrderChange = (index: number, orderDelta: number) => {
+        const maxLen = imgDataUrlList.length;
+        const targetIndex = (index + orderDelta + maxLen) % maxLen;
+        [imgDataUrlList[index], imgDataUrlList[targetIndex]] = [imgDataUrlList[targetIndex], imgDataUrlList[index]];
+        setImgDataUrlList([...imgDataUrlList]);
+    }
+
     const onReset = () => {
         setResultURL('');
     };
@@ -141,7 +148,11 @@ const ImageStitcher: FC = (): ReactElement => {
             </div>
             {resultURL === '' && (
                 <div className="image-list" ref={imageListRef}>
-                    {imgDataUrlList.map((item, i) => <AreaSelector key={`selector-${i}`} src={item} onChange={(top, bottom) => onSelectorChange(i, top, bottom)} />)}
+                    {imgDataUrlList.map((item, i) => (
+                        <AreaSelector key={`selector-${i}`} src={item}
+                            onSelectorChange={(top, bottom) => onSelectorChange(i, top, bottom)}
+                            onOrderChange={(orderDelta) => onOrderChange(i, orderDelta)} />
+                    ))}
                 </div>
             )}
             {resultURL !== '' && (
@@ -155,12 +166,14 @@ const ImageStitcher: FC = (): ReactElement => {
 
 interface IAreaSelectorProps {
     src: string;
-    onChange: (top: number, bottom: number) => void;
+    onSelectorChange: (top: number, bottom: number) => void;
+    onOrderChange: (orderDelta: number) => void;
 }
 
 const AreaSelector: FC<IAreaSelectorProps> = ({
     src,
-    onChange
+    onSelectorChange,
+    onOrderChange
 }) => {
 
     const [topTouched, setTopTouched] = useState<boolean>(false);
@@ -229,7 +242,7 @@ const AreaSelector: FC<IAreaSelectorProps> = ({
             bottom = bottom.substring(0, bottom.length - 2);
             setBottomStartOffset(Number(bottom));
             
-            if (topTouched || bottomTouched) onChange(Number(top) / height!, Number(bottom) / height!);
+            if (topTouched || bottomTouched) onSelectorChange(Number(top) / height!, Number(bottom) / height!);
             setTopTouched(false);
             setBottomTouched(false);
         };
@@ -240,14 +253,20 @@ const AreaSelector: FC<IAreaSelectorProps> = ({
             body!.removeEventListener('mouseup', mouseUpListener);
             body!.removeEventListener('touchend', mouseUpListener);
         };
-    }, [height, onChange, topTouched, bottomTouched]);
+    }, [height, onSelectorChange, topTouched, bottomTouched]);
 
     return (
         <div className="area-selector" onMouseMove={onMove} onTouchMove={onMove}>
-            <img className="source-image" src={src} alt="图片" />
-            <div className="area-box" ref={areaRef}>
-                <div className="bar top-bar" ref={topRef} onMouseDown={onTopBarStart} onTouchStart={onTopBarStart}></div>
-                <div className="bar bottom-bar" ref={bottomRef} onMouseDown={onBottomBarStart} onTouchStart={onBottomBarStart}></div>
+            <div className="area-item">
+                <img className="source-image" src={src} alt="图片" />
+                <div className="area-box" ref={areaRef}>
+                    <div className="bar top-bar" ref={topRef} onMouseDown={onTopBarStart} onTouchStart={onTopBarStart}></div>
+                    <div className="bar bottom-bar" ref={bottomRef} onMouseDown={onBottomBarStart} onTouchStart={onBottomBarStart}></div>
+                </div>
+            </div>
+            <div className="order-btn-group">
+                <button className="order-btn up-btn" onClick={() => onOrderChange(-1)}></button>
+                <button className="order-btn down-btn" onClick={() => onOrderChange(1)}></button>
             </div>
         </div>
     );
