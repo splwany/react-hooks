@@ -120,11 +120,39 @@ const ImageStitcher: FC = (): ReactElement => {
         setCropRangeList([...cropRangeList]);
     };
 
+    const onDeleteImg = (index: number) => {
+        imgDataUrlList.splice(index, 1);
+        setImgDataUrlList([...imgDataUrlList]);
+        cropRangeList.splice(index, 1);
+        setCropRangeList([...cropRangeList]);
+    }
+
     const onOrderChange = (index: number, orderDelta: number) => {
         const maxLen = imgDataUrlList.length;
         const targetIndex = (index + orderDelta + maxLen) % maxLen;
         [imgDataUrlList[index], imgDataUrlList[targetIndex]] = [imgDataUrlList[targetIndex], imgDataUrlList[index]];
         setImgDataUrlList([...imgDataUrlList]);
+    }
+
+    const onAddImgClicked = (index: number) => {
+        const inputElem = document.createElement('input');
+        inputElem.setAttribute('type', 'file');
+        inputElem.setAttribute('accept', 'image/*');
+        inputElem.setAttribute('multiple', 'true');
+        inputElem.addEventListener('change', async (e: any) => {
+            const fileList = e.target.files;
+            const list: string[] = [];
+            for (let i = 0; i < fileList.length; ++i) {
+                const file = fileList[i];
+                const blobUrl = await getImageDataUrl(file);
+                list.push(blobUrl);
+            }
+            imgDataUrlList.splice(index + 1, 0, ...list);
+            setImgDataUrlList([...imgDataUrlList]);
+            cropRangeList.splice(index + 1, 0, [0, 0]);
+            setCropRangeList([...cropRangeList]);
+        });
+        inputElem.click();
     }
 
     const onReset = () => {
@@ -149,9 +177,13 @@ const ImageStitcher: FC = (): ReactElement => {
             {resultURL === '' && (
                 <div className="image-list" ref={imageListRef}>
                     {imgDataUrlList.map((item, i) => (
-                        <AreaSelector key={`selector-${i}`} src={item}
-                            onSelectorChange={(top, bottom) => onSelectorChange(i, top, bottom)}
-                            onOrderChange={(orderDelta) => onOrderChange(i, orderDelta)} />
+                        <div className="selector-item" key={`selector-item-${i}`}>
+                            <AreaSelector src={item}
+                                onSelectorChange={(top, bottom) => onSelectorChange(i, top, bottom)}
+                                onDeleteImg={() => onDeleteImg(i)}
+                                onOrderChange={(orderDelta) => onOrderChange(i, orderDelta)} />
+                            <button className="add-img-btn" onClick={() => onAddImgClicked(i)}></button>
+                        </div>
                     ))}
                 </div>
             )}
@@ -168,12 +200,14 @@ interface IAreaSelectorProps {
     src: string;
     onSelectorChange: (top: number, bottom: number) => void;
     onOrderChange: (orderDelta: number) => void;
+    onDeleteImg: () => void;
 }
 
 const AreaSelector: FC<IAreaSelectorProps> = ({
     src,
     onSelectorChange,
-    onOrderChange
+    onOrderChange,
+    onDeleteImg
 }) => {
 
     const [topTouched, setTopTouched] = useState<boolean>(false);
@@ -266,6 +300,7 @@ const AreaSelector: FC<IAreaSelectorProps> = ({
             </div>
             <div className="order-btn-group">
                 <button className="order-btn up-btn" onClick={() => onOrderChange(-1)}></button>
+                <button className="order-btn delete-btn" onClick={() => onDeleteImg()}></button>
                 <button className="order-btn down-btn" onClick={() => onOrderChange(1)}></button>
             </div>
         </div>

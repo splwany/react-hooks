@@ -56,6 +56,7 @@ input[type=file] {
 
 .image-list,
 .result {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -67,6 +68,25 @@ input[type=file] {
 .result-image {
     width: 30rem;
     display: block;
+}
+
+.selector-item {
+    position: relative;
+}
+
+.add-img-btn {
+    position: absolute;
+    right: 1rem;
+    bottom: -1.25rem;
+    border: unset;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background-color: transparent;
+    background-image: url(/src/static/icons/add-img.svg);
+    background-size: contain;
+    cursor: pointer;
+    z-index: 10;
 }
 
 .area-selector {
@@ -130,9 +150,7 @@ input[type=file] {
     display: flex;
     flex-direction: column;
     width: 2.5rem;
-    height: 6rem;
     align-items: center;
-    justify-content: space-between;
     margin: 1rem;
 }
 
@@ -143,6 +161,7 @@ input[type=file] {
     /* mask-position: center; */
     /* mask-size: 100%; */
     /* mask-repeat: no-repeat; */
+    margin-bottom: 1rem;
     background-size: contain;
     border: unset;
     border-radius: 50%;
@@ -153,6 +172,10 @@ input[type=file] {
 .up-btn {
     /* mask-image: url(/src/static/icons/up.svg); */
     background-image: url(/src/static/icons/up.svg);
+}
+
+.delete-btn {
+    background-image: url(/src/static/icons/delete-img.svg);
 }
 
 .down-btn {
