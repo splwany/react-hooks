@@ -1,4 +1,4 @@
-import { FC, ReactElement, useMemo } from 'react';
+import { FC, ReactElement } from 'react';
 import './index.css';
 import Nav from './Nav';
 import TodoList from './TodoList';
@@ -55,22 +55,22 @@ const TodoListChooser: FC<ITodoListChooserProps> = ({
     } = useTodoListChooserInit(listModes, dispatch);
 
     const todoListElements = (() => titles.map((title, i) => (
-        <TodoList {...{
-            title,
-            list: lists[i],
-            emptyContent: emptyContents[i],
-            reverse: reverses[i],
-            deleteButtonText: deleteButtonTexts[i],
-            onChange,
-            onDelete: canClears[i] ? onDelete : undefined
-        }} />
+        <TodoList
+            title={title}
+            list={lists[i]}
+            emptyContent={emptyContents[i]}
+            reverse={reverses[i]}
+            deleteButtonText={deleteButtonTexts[i]}
+            onChange={onChange}
+            onDelete={canClears[i] ? onDelete : undefined}
+        />
     )))();
     
     return todoListElements[index];
 };
 
 export const TodoWithInit = (): ReactElement => {
-    const listModes = useMemo((): TodoListModeType[] => [
+    const listModes = [
         {
             navTitle: 'Todo List',
             listTitle: '待办',
@@ -83,8 +83,8 @@ export const TodoWithInit = (): ReactElement => {
             listTitle: '已完成',
             emptyContent: "什么都没有完成(●'◡'●)",
             canInput: false,
-        }
-    ], []);
+        },
+    ];
 
     return <Todo listModes={listModes} />;
 }
